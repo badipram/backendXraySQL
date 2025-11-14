@@ -9,12 +9,43 @@ import uuid
 import cv2
 import base64
 
-db = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="",
-    database="db_xray"
-)
+# db_config = {
+#     "host": "localhost",
+#     "user": "root",
+#     "password": "",
+#     "database": "db_xray",
+# }
+
+db_config = {
+    "host": os.getenv("MYSQLHOST"),
+    "user": os.getenv("MYSQLUSER"),
+    "password": os.getenv("MYSQLPASSWORD"),
+    "database": os.getenv("MYSQLDATABASE"),
+    "port": int(os.getenv("MYSQLPORT", 3306)),
+}
+
+db = None
+
+def get_db():
+    """Return a live MySQL connection, reconnecting if necessary."""
+    global db
+    try:
+        if db is None:
+            db = mysql.connector.connect(**db_config)
+        else:
+            # Try to ensure the connection is alive; reconnect if not
+            try:
+                if not db.is_connected():
+                    db = mysql.connector.connect(**db_config)
+                else:
+                    # ping to keep/verify connection (reconnect if needed)
+                    db.ping(reconnect=True, attempts=3, delay=2)
+            except Exception:
+                db = mysql.connector.connect(**db_config)
+    except Exception:
+        # Final attempt to create connection; let caller handle exceptions
+        db = mysql.connector.connect(**db_config)
+    return db
 
 app = Flask(__name__)
 CORS(app)
@@ -65,7 +96,7 @@ def predict():
                 "bbox": [float(x) for x in box.xyxy[0].tolist()]
             })
 
-        cursor = db.cursor()
+        cursor = get_db().cursor()
         sql = "INSERT INTO detections3 (file_name, detected_at, result_text, detection_info) VALUES (%s, %s, %s, %s)"
         val = (
             filename,
@@ -74,7 +105,7 @@ def predict():
             json.dumps(detection_info)
         )
         cursor.execute(sql, val)
-        db.commit()
+        get_db().commit()
         cursor.close()
 
         return jsonify({
@@ -91,7 +122,7 @@ import os
 
 @app.route('/last-prediction', methods=['GET'])
 def last_prediction():
-    cursor = db.cursor(dictionary=True)
+    cursor = get_db().cursor(dictionary=True)
     cursor.execute("SELECT * FROM detections3 ORDER BY id DESC LIMIT 1")
     row = cursor.fetchone()
     cursor.close()
@@ -117,7 +148,7 @@ def last_prediction():
 
 @app.route('/reset-prediction', methods=['POST'])
 def reset_prediction():
-    cursor = db.cursor(dictionary=True)
+    cursor = get_db().cursor(dictionary=True)
     cursor.execute("SELECT * FROM detections3 ORDER BY id DESC LIMIT 1")
     row = cursor.fetchone()
     if row:
@@ -132,9 +163,9 @@ def reset_prediction():
             if os.path.exists(path):
                 os.remove(path)
         # Hapus data dari database
-        cursor2 = db.cursor()
+        cursor2 = get_db().cursor()
         cursor2.execute("DELETE FROM detections3 WHERE id = %s", (row['id'],))
-        db.commit()
+        get_db().commit()
         cursor2.close()
     cursor.close()
     return jsonify({"status": "reset"})
