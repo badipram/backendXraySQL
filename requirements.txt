@@ -2,9 +2,9 @@ flask
 flask-cors
 ultralytics
 opencv-python-headless
-gdown
 gunicorn
 torch==2.2.2+cpu
 torchvision==0.17.2+cpu
 numpy<2
+mysql-connector-python
 --extra-index-url https://download.pytorch.org/whl/cpu
