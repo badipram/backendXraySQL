@@ -219,7 +219,7 @@
 #     port = int(os.getenv("PORT", 5050))
 #     app.run(debug=False, host="0.0.0.0", port=port)
 
-# ...existing code...
+
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from datetime import datetime
@@ -239,11 +239,11 @@ except Exception:
     pass
 
 db_config = {
-    "host": os.getenv("MYSQLHOST", "localhost"),
-    "user": os.getenv("MYSQLUSER", "root"),
-    "password": os.getenv("MYSQLPASSWORD", ""),
-    "database": os.getenv("MYSQLDATABASE", "db_xray"),
-    "port": int(os.getenv("MYSQLPORT", 3306)),
+    "host": os.getenv("MYSQLHOST"),
+    "user": os.getenv("MYSQLUSER"),
+    "password": os.getenv("MYSQLPASSWORD"),
+    "database": os.getenv("MYSQLDATABASE"),
+    "port": int(os.getenv("MYSQLPORT")),
 }
 
 # Try create a connection pool; fallback to None and use direct connect
@@ -451,4 +451,3 @@ def reset_prediction():
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5050))
     app.run(debug=False, host="0.0.0.0", port=port)
-# ...existing code...
