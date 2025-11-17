@@ -239,11 +239,11 @@ except Exception:
     pass
 
 db_config = {
-    "host": os.getenv("MYSQLHOST"),
-    "user": os.getenv("MYSQLUSER"),
-    "password": os.getenv("MYSQLPASSWORD"),
-    "database": os.getenv("MYSQLDATABASE"),
-    "port": int(os.getenv("MYSQLPORT")),
+    "host": os.getenv("MYSQLHOST", "mysql.railway.internal"),
+    "user": os.getenv("MYSQLUSER", "root"),
+    "password": os.getenv("MYSQLPASSWORD", "hXyyBrmoUSGffKZkZgzElqxxsbxhrUPv"),
+    "database": os.getenv("MYSQLDATABASE", "railway"),
+    "port": int(os.getenv("MYSQLPORT", 3306)),
 }
 
 # Try create a connection pool; fallback to None and use direct connect
