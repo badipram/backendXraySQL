@@ -288,9 +288,24 @@ def img_to_base64(img_path):
         return base64.b64encode(f.read()).decode("utf-8")
 
 def enhance_image(img):
-    alpha = 1.0  # contrast
-    beta = 20    # brightness
-    return cv2.convertScaleAbs(img, alpha=alpha, beta=beta)
+     # Ubah ke grayscale
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    
+    # CLAHE untuk penyesuaian kontras lokal
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+    enhanced = clahe.apply(gray)
+    
+    # Penyesuaian kecerahan dan kontras ringan (linear adjustment)
+    alpha = 1.1  # memperkuat kontras sedikit
+    beta = 15    # meningkatkan brightness sedikit
+    enhanced = cv2.convertScaleAbs(enhanced, alpha=alpha, beta=beta)
+    
+    # Gaussian blur untuk mengurangi noise ringan
+    enhanced = cv2.GaussianBlur(enhanced, (3, 3), 0)
+    
+    # Kembalikan ke format BGR agar bisa disimpan dan ditampilkan
+    enhanced_bgr = cv2.cvtColor(enhanced, cv2.COLOR_GRAY2BGR)
+    return enhanced_bgr
 
 @app.route('/predict', methods=['POST'])
 def predict():
