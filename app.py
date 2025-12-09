@@ -119,53 +119,12 @@ def predict():
         cv2.imwrite(pred_path, plot_img)
         pred_b64 = img_to_base64(pred_path)
 
-    #     detection_info = []
-    #     for box in result.boxes:
-    #         detection_info.append({
-    #             "confidence": float(box.conf[0]),
-    #             "bbox": [float(x) for x in box.xyxy[0].tolist()]
-    #         })
-
-    #     conn = get_db()
-    #     try:
-    #         cursor = conn.cursor()
-    #         sql = "INSERT INTO detections3 (file_name, detected_at, result_text, detection_info) VALUES (%s, %s, %s, %s)"
-    #         val = (
-    #             filename,
-    #             datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-    #             "✅ Prediction Completed",
-    #             json.dumps(detection_info)
-    #         )
-    #         cursor.execute(sql, val)
-    #         conn.commit()
-    #         cursor.close()
-    #     finally:
-    #         try:
-    #             conn.close()
-    #         except Exception:
-    #             pass
-
-    #     return jsonify({
-    #         "original": original_b64,
-    #         "enhanced": enhanced_b64,
-    #         "predicted": pred_b64,
-    #         "detection_info": detection_info
-    #     })
-    # except Exception as e:
-    #     print("❌ Error during prediction:", e)
-    #     return jsonify({"error": str(e)}), 500
-
-    # TAMBAHKAN CONFIDENCE THRESHOLD (misal 0.5 = 50%)
-        CONFIDENCE_THRESHOLD = 0.5
         detection_info = []
         for box in result.boxes:
-            conf = float(box.conf[0])
-            # Filter: hanya deteksi dengan confidence >= threshold
-            if conf >= CONFIDENCE_THRESHOLD:
-                detection_info.append({
-                    "confidence": conf,
-                    "bbox": [float(x) for x in box.xyxy[0].tolist()]
-                })
+            detection_info.append({
+                "confidence": float(box.conf[0]),
+                "bbox": [float(x) for x in box.xyxy[0].tolist()]
+            })
 
         conn = get_db()
         try:
