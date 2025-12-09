@@ -123,7 +123,8 @@ def predict():
         for box in result.boxes:
             detection_info.append({
                 "confidence": float(box.conf[0]),
-                "bbox": [float(x) for x in box.xyxy[0].tolist()]
+                "bbox": [float(x) for x in box.xyxy[0].tolist()],
+                "label": model.names[int(box.cls[0])]
             })
 
         conn = get_db()
