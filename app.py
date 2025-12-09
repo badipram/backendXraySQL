@@ -54,7 +54,7 @@ def get_model():
     global _model
     if _model is None:
         from ultralytics import YOLO
-        _model = YOLO("best.pt")
+        _model = YOLO("best2.pt")
     return _model
 
 os.makedirs("uploads", exist_ok=True)
