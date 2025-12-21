@@ -9,7 +9,6 @@ import uuid
 import cv2
 import base64
 
-# dotenv optional (Railway uses environment variables)
 try:
     from dotenv import load_dotenv
     load_dotenv()
@@ -24,7 +23,6 @@ db_config = {
     "port": int(os.getenv("MYSQLPORT", 3306)),
 }
 
-# Try create a connection pool; fallback to None and use direct connect
 db_pool = None
 try:
     db_pool = pooling.MySQLConnectionPool(
@@ -48,13 +46,12 @@ def get_db():
 app = Flask(__name__)
 CORS(app)
 
-# lazy-load model to avoid heavy import at container boot
 _model = None
 def get_model():
     global _model
     if _model is None:
         from ultralytics import YOLO
-        _model = YOLO("best.pt")
+        _model = YOLO("best2.0.pt")
     return _model
 
 os.makedirs("uploads", exist_ok=True)
@@ -66,25 +63,18 @@ def img_to_base64(img_path):
         return base64.b64encode(f.read()).decode("utf-8")
 
 def enhance_image(img):
-    # Ubah ke grayscale agar lebih fokus pada struktur tulang
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     
-    # CLAHE untuk penyesuaian kontras lokal
     clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
     enhanced = clahe.apply(gray)
     
-    # Penyesuaian kecerahan dan kontras ringan (linear adjustment)
-    alpha = 1.1  # memperkuat kontras sedikit
-    beta = 15    # meningkatkan brightness sedikit
+    alpha = 1.1
+    beta = 15
     enhanced = cv2.convertScaleAbs(enhanced, alpha=alpha, beta=beta)
-    
-    # 🔹 Tahap noise reduction:
-    # 1. Median filter untuk menghilangkan noise bintik (salt & pepper)
+
     enhanced = cv2.medianBlur(enhanced, 3)
-    # 2. Gaussian blur untuk meratakan noise halus
     enhanced = cv2.GaussianBlur(enhanced, (3, 3), 0)
     
-    # Kembalikan ke format BGR agar bisa disimpan dan ditampilkan
     enhanced_bgr = cv2.cvtColor(enhanced, cv2.COLOR_GRAY2BGR)
     return enhanced_bgr
 
